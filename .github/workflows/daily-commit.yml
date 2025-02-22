@@ -1,0 +1,36 @@
+name: Daily Commit
+
+on:
+  schedule:
+    - cron: '30 9-17 * * 1-5'  # Runs every hour from 9:30 AM to 5:30 PM UTC on weekdays
+    - cron: '15 10-15 * * 6'  # Runs every hour from 10:15 AM to 3:15 PM UTC on Saturday
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Configure Git
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+
+    - name: Run auto commit script
+      run: python auto_commit.py
+
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
