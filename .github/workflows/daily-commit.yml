@@ -33,10 +33,10 @@ jobs:
     - name: Run auto commit script
       run: python auto_commit.py
 
-    - name: Push changes
+    - name: Commit and Push changes
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.PAT }}
       run: |
         git add .
         git commit -m "Update daily inspiration"
-        git push origin HEAD
+        git push https://${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
