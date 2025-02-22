@@ -168,22 +168,27 @@ def generate_code_changes():
         with open(filename, 'w') as f:
             if ext == '.py':
                 # Generate different types of Python code templates
-                templates = [
-                    # Modern class with type hints and dataclass
-                    [
-                        'from dataclasses import dataclass',
-                        'from typing import List, Optional, Dict',
-                        'import datetime',
-                        'import random',
-                        '',
-                        '@dataclass',
-                        'class SmartDataProcessor:',
-                        '    name: str',
-                        '    data: List[float]',
-                        '    created_at: datetime.datetime = datetime.datetime.now()',
-                        '',
-                        '    def process_data(self) -> Dict[str, float]:',
-                        '        "
+                code = [
+                    'from dataclasses import dataclass',
+                    'from typing import List, Optional, Dict',
+                    'import datetime',
+                    'import random',
+                    '',
+                    '@dataclass',
+                    'class SmartDataProcessor:',
+                    '    name: str',
+                    '    data: List[float]',
+                    '    created_at: datetime.datetime = datetime.datetime.now()',
+                    '',
+                    '    def process_data(self) -> Dict[str, float]:',
+                    '        """Process the data and return summary statistics."""',
+                    '        if not self.data:',
+                    '            return {}',
+                    '        return {',
+                    '            "mean": sum(self.data) / len(self.data),',
+                    '            "max": max(self.data),',
+                    '            "min": min(self.data)',
+                    '        }'
                 ]
                 f.write('\n'.join(code))
             elif ext == '.js':
