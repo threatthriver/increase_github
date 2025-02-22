@@ -1,6 +1,8 @@
 name: Daily Commit
 
 on:
+  push:
+    branches: [ main, master ]  # Runs on push to main or master branch
   schedule:
     - cron: '30 9-17 * * 1-5'  # Runs every hour from 9:30 AM to 5:30 PM UTC on weekdays
     - cron: '15 10-15 * * 6'  # Runs every hour from 10:15 AM to 3:15 PM UTC on Saturday
