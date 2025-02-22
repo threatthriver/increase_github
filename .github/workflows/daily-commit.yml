@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        persist-credentials: false
+        token: ${{ secrets.ACCESS_TOKEN }}
         fetch-depth: 0
 
     - name: Set up Python
@@ -34,9 +34,11 @@ jobs:
       run: python auto_commit.py
 
     - name: Commit and Push changes
-      env:
-        GITHUB_TOKEN: ${{ secrets.PAT }}
       run: |
-        git add .
-        git commit -m "Update daily inspiration"
-        git push https://${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+        if [[ -n "$(git status --porcelain)" ]]; then
+          git add .
+          git commit -m "Update daily inspiration"
+          git push origin HEAD:${GITHUB_REF}
+        else
+          echo "No changes to commit"
+        fi
