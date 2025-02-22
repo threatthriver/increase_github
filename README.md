@@ -10,40 +10,29 @@ This tool automatically generates daily commits to help maintain an active GitHu
    - Configure your Git username and email
    - Set up SSH keys or store your GitHub credentials
 
+# Daily Inspiration and Activity Tracker
+
+This tool generates daily inspirational quotes and tracks your development activities. It helps maintain a log of your daily progress while keeping you motivated with meaningful quotes.
+
 ## How it Works
 
 The `auto_commit.py` script:
-- Creates/updates a `daily_update.txt` file with a timestamp and random quote
-- Commits the changes to your repository
-- Pushes the changes to GitHub
+- Creates/updates a `daily_update.txt` file with timestamps and inspirational quotes
+- Tracks your development activities and progress
+- Maintains a historical record of your journey
 
 ## Automated Daily Runs
 
-To run the script automatically every day:
-
-### On macOS/Linux:
-1. Open terminal and type: `crontab -e`
-2. Add this line to run it daily at 12:00 PM:
-   ```
-   0 12 * * * cd /path/to/repository && /usr/bin/python3 auto_commit.py
-   ```
-3. Save and exit
+To run the quote generator automatically every day:
 
 ### On Windows:
 1. Open Task Scheduler
 2. Create a new task to run `python auto_commit.py` daily
 3. Set the working directory to your repository location
 
-## Manual Run
-
-To run the script manually:
-```bash
-python3 auto_commit.py
-```
-
 ## Note
 
 Make sure to:
 - Keep your local repository updated
-- Maintain proper GitHub credentials
-- Check the logs periodically to ensure the script is running correctly
+- Maintain proper credentials
+- Check the logs periodically to ensure the quote generator is running correctly
