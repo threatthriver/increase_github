@@ -126,7 +126,7 @@ def generate_activity_message() -> str:
     return f"{category}: {activity}"
 
 def generate_daily_inspiration() -> str:
-    quotes, _, _ = load_content_data()
+    quotes, _, _, _ = load_content_data()
     now = datetime.datetime.now()
     
     # Ensure commits only happen during working hours (9 AM to 6 PM)
@@ -168,28 +168,79 @@ def generate_code_changes():
         with open(filename, 'w') as f:
             if ext == '.py':
                 # Generate different types of Python code templates
-                code = [
-                    'from dataclasses import dataclass',
-                    'from typing import List, Optional, Dict',
-                    'import datetime',
-                    'import random',
-                    '',
-                    '@dataclass',
-                    'class SmartDataProcessor:',
-                    '    name: str',
-                    '    data: List[float]',
-                    '    created_at: datetime.datetime = datetime.datetime.now()',
-                    '',
-                    '    def process_data(self) -> Dict[str, float]:',
-                    '        """Process the data and return summary statistics."""',
-                    '        if not self.data:',
-                    '            return {}',
-                    '        return {',
-                    '            "mean": sum(self.data) / len(self.data),',
-                    '            "max": max(self.data),',
-                    '            "min": min(self.data)',
-                    '        }'
+                templates = [
+                    # Data processing template with enhanced error handling
+                    [
+                        'from dataclasses import dataclass',
+                        'from typing import List, Optional, Dict',
+                        'import datetime',
+                        'import random',
+                        'import logging',
+                        '',
+                        'logging.basicConfig(level=logging.INFO)',
+                        '',
+                        '@dataclass',
+                        'class SmartDataProcessor:',
+                        '    name: str',
+                        '    data: List[float]',
+                        '    created_at: datetime.datetime = datetime.datetime.now()',
+                        '',
+                        '    def process_data(self) -> Dict[str, float]:',
+                        '        """Process the data and return summary statistics."""',
+                        '        if not self.data:',
+                        '            return {}',
+                        '        return {',
+                        '            "mean": sum(self.data) / len(self.data),',
+                        '            "max": max(self.data),',
+                        '            "min": min(self.data)',
+                        '        }',
+                        '',
+                        '    def add_data(self, value: float) -> None:',
+                        '        """Add new data point to the processor."""',
+                        '        self.data.append(value)',
+                        '        print(f"Added new data point: {value}")',
+                    ],
+                    # API service template
+                    [
+                        'from fastapi import FastAPI, HTTPException',
+                        'from pydantic import BaseModel',
+                        'from typing import List, Optional',
+                        '',
+                        'app = FastAPI()',
+                        '',
+                        'class Item(BaseModel):',
+                        '    name: str',
+                        '    description: Optional[str] = None',
+                        '    price: float',
+                        '    available: bool = True',
+                        '',
+                        '@app.get("/items/")',
+                        'async def read_items():',
+                        '    return {"items": []}',
+                        '',
+                        '@app.post("/items/")',
+                        'async def create_item(item: Item):',
+                        '    return item',
+                    ],
+                    # Machine learning template
+                    [
+                        'import numpy as np',
+                        'from sklearn.model_selection import train_test_split',
+                        'from sklearn.metrics import accuracy_score',
+                        '',
+                        'class SimpleClassifier:',
+                        '    def __init__(self):',
+                        '        self.weights = None',
+                        '',
+                        '    def fit(self, X, y):',
+                        '        self.weights = np.random.randn(X.shape[1])',
+                        '        print("Model trained successfully")',
+                        '',
+                        '    def predict(self, X):',
+                        '        return np.dot(X, self.weights) > 0',
+                    ]
                 ]
+                code = random.choice(templates)
                 f.write('\n'.join(code))
             elif ext == '.js':
                 code = [

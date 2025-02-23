@@ -27,8 +27,8 @@ jobs:
 
     - name: Configure Git
       run: |
-        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
+        git config --local user.email "${{ secrets.USER_EMAIL }}"
+        git config --local user.name "${{ secrets.USER_NAME }}"
 
     - name: Run auto commit script
       run: python auto_commit.py
