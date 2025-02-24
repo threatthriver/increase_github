@@ -120,13 +120,13 @@ def load_content_data() -> Tuple[List[str], List[str], List[str], List[str]]:
     return quotes, activities, categories, languages
 
 def generate_activity_message() -> str:
-    quotes, activities, categories = load_content_data()
+    _, activities, categories, _ = load_content_data()
     activity = random.choice(activities)
     category = random.choice(categories)
     return f"{category}: {activity}"
 
 def generate_daily_inspiration() -> str:
-    quotes, _, _, _ = load_content_data()
+    quotes, activities, categories, _ = load_content_data()
     now = datetime.datetime.now()
     
     # Ensure commits only happen during working hours (9 AM to 6 PM)
@@ -167,77 +167,175 @@ def generate_code_changes():
     if not os.path.exists(filename):
         with open(filename, 'w') as f:
             if ext == '.py':
-                # Generate different types of Python code templates
+                # Generate diverse Python code templates showcasing modern features and best practices
                 templates = [
-                    # Data processing template with enhanced error handling
+                    # Advanced data processing with context manager and error handling
                     [
-                        'from dataclasses import dataclass',
-                        'from typing import List, Optional, Dict',
+                        'from dataclasses import dataclass, field',
+                        'from typing import List, Optional, Dict, Any, ContextManager',
+                        'from contextlib import contextmanager',
                         'import datetime',
-                        'import random',
                         'import logging',
+                        'from pathlib import Path',
+                        'import json',
                         '',
-                        'logging.basicConfig(level=logging.INFO)',
+                        'logging.basicConfig(',
+                        '    level=logging.INFO,',
+                        '    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"',
+                        ')',
                         '',
                         '@dataclass',
-                        'class SmartDataProcessor:',
+                        'class DataProcessor:',
                         '    name: str',
-                        '    data: List[float]',
-                        '    created_at: datetime.datetime = datetime.datetime.now()',
+                        '    data: List[float] = field(default_factory=list)',
+                        '    created_at: datetime.datetime = field(default_factory=datetime.datetime.now)',
+                        '    logger: logging.Logger = field(init=False)',
+                        '',
+                        '    def __post_init__(self) -> None:',
+                        '        self.logger = logging.getLogger(self.__class__.__name__)',
+                        '',
+                        '    @contextmanager',
+                        '    def error_handling(self) -> ContextManager[Any]:',
+                        '        try:',
+                        '            yield',
+                        '        except Exception as e:',
+                        '            self.logger.error(f"Error processing data: {str(e)}")',
+                        '            raise',
                         '',
                         '    def process_data(self) -> Dict[str, float]:',
-                        '        """Process the data and return summary statistics."""',
-                        '        if not self.data:',
-                        '            return {}',
-                        '        return {',
-                        '            "mean": sum(self.data) / len(self.data),',
-                        '            "max": max(self.data),',
-                        '            "min": min(self.data)',
-                        '        }',
+                        '        with self.error_handling():',
+                        '            if not self.data:',
+                        '                self.logger.warning("No data available for processing")',
+                        '                return {}',
+                        '            stats = {',
+                        '                "mean": sum(self.data) / len(self.data),',
+                        '                "max": max(self.data),',
+                        '                "min": min(self.data),',
+                        '                "variance": sum((x - (sum(self.data) / len(self.data))) ** 2 for x in self.data) / len(self.data)',
+                        '            }',
+                        '            self.logger.info(f"Processed {len(self.data)} data points")',
+                        '            return stats',
                         '',
-                        '    def add_data(self, value: float) -> None:',
-                        '        """Add new data point to the processor."""',
-                        '        self.data.append(value)',
-                        '        print(f"Added new data point: {value}")',
+                        '    def save_to_file(self, filepath: Path) -> None:',
+                        '        with self.error_handling():',
+                        '            data = {',
+                        '                "name": self.name,',
+                        '                "data": self.data,',
+                        '                "created_at": self.created_at.isoformat()',
+                        '            }',
+                        '            filepath.write_text(json.dumps(data, indent=2))',
+                        '            self.logger.info(f"Saved data to {filepath}")',
                     ],
-                    # API service template
+                    # Modern async API with dependency injection
                     [
-                        'from fastapi import FastAPI, HTTPException',
-                        'from pydantic import BaseModel',
-                        'from typing import List, Optional',
+                        'from fastapi import FastAPI, HTTPException, Depends, status',
+                        'from pydantic import BaseModel, Field',
+                        'from typing import List, Optional, Dict',
+                        'from datetime import datetime',
+                        'import asyncio',
+                        'from abc import ABC, abstractmethod',
                         '',
-                        'app = FastAPI()',
+                        'class StorageBackend(ABC):',
+                        '    @abstractmethod',
+                        '    async def get_items(self) -> List[Dict]:',
+                        '        pass',
+                        '',
+                        'class InMemoryStorage(StorageBackend):',
+                        '    def __init__(self):',
+                        '        self.items = []',
+                        '',
+                        '    async def get_items(self) -> List[Dict]:',
+                        '        return self.items',
                         '',
                         'class Item(BaseModel):',
-                        '    name: str',
-                        '    description: Optional[str] = None',
-                        '    price: float',
-                        '    available: bool = True',
+                        '    name: str = Field(..., min_length=1)',
+                        '    description: Optional[str] = Field(None, max_length=1000)',
+                        '    price: float = Field(..., gt=0)',
+                        '    created_at: datetime = Field(default_factory=datetime.now)',
                         '',
-                        '@app.get("/items/")',
-                        'async def read_items():',
-                        '    return {"items": []}',
+                        'app = FastAPI(title="Modern API", version="1.0.0")',
+                        'storage = InMemoryStorage()',
                         '',
-                        '@app.post("/items/")',
-                        'async def create_item(item: Item):',
+                        'async def get_storage() -> StorageBackend:',
+                        '    return storage',
+                        '',
+                        '@app.get("/items/", response_model=List[Item])',
+                        'async def read_items(storage: StorageBackend = Depends(get_storage)):',
+                        '    return await storage.get_items()',
+                        '',
+                        '@app.post("/items/", response_model=Item, status_code=status.HTTP_201_CREATED)',
+                        'async def create_item(item: Item, storage: StorageBackend = Depends(get_storage)):',
+                        '    await asyncio.sleep(0.1)  # Simulate IO operation',
+                        '    storage.items.append(item.dict())',
                         '    return item',
                     ],
-                    # Machine learning template
+                    # Advanced ML with type hints and custom exceptions
                     [
                         'import numpy as np',
-                        'from sklearn.model_selection import train_test_split',
-                        'from sklearn.metrics import accuracy_score',
+                        'import numpy.typing as npt',
+                        'from dataclasses import dataclass',
+                        'from typing import Optional, Tuple',
+                        'import logging',
                         '',
-                        'class SimpleClassifier:',
-                        '    def __init__(self):',
-                        '        self.weights = None',
+                        'class ModelError(Exception):',
+                        '    """Base exception for model errors"""',
                         '',
-                        '    def fit(self, X, y):',
-                        '        self.weights = np.random.randn(X.shape[1])',
-                        '        print("Model trained successfully")',
+                        'class NotFittedError(ModelError):',
+                        '    """Raised when prediction is attempted on an unfitted model"""',
                         '',
-                        '    def predict(self, X):',
-                        '        return np.dot(X, self.weights) > 0',
+                        '@dataclass',
+                        'class BinaryClassifier:',
+                        '    learning_rate: float = 0.01',
+                        '    max_iterations: int = 1000',
+                        '    weights: Optional[npt.NDArray] = None',
+                        '    logger: logging.Logger = logging.getLogger("BinaryClassifier")',
+                        '',
+                        '    def fit(self, X: npt.NDArray, y: npt.NDArray) -> Tuple[float, float]:',
+                        '        """Train the model using gradient descent."""',
+                        '        if len(X.shape) != 2:',
+                        '            raise ValueError(f"Expected 2D array, got {len(X.shape)}D")',
+                        '        if len(y.shape) != 1:',
+                        '            raise ValueError(f"Expected 1D array for labels, got {len(y.shape)}D")',
+                        '',
+                        '        n_samples, n_features = X.shape',
+                        '        self.weights = np.zeros(n_features)',
+                        '        best_accuracy = 0.0',
+                        '        best_loss = float("inf")',
+                        '',
+                        '        for i in range(self.max_iterations):',
+                        '            predictions = self._sigmoid(np.dot(X, self.weights))',
+                        '            loss = self._compute_loss(y, predictions)',
+                        '            accuracy = np.mean((predictions >= 0.5) == y)',
+                        '',
+                        '            if accuracy > best_accuracy:',
+                        '                best_accuracy = accuracy',
+                        '                best_loss = loss',
+                        '',
+                        '            gradient = np.dot(X.T, (predictions - y)) / n_samples',
+                        '            self.weights -= self.learning_rate * gradient',
+                        '',
+                        '            if i % 100 == 0:',
+                        '                self.logger.info(',
+                        '                    f"Iteration {i}: loss={loss:.4f}, accuracy={accuracy:.4f}"',
+                        '                )',
+                        '',
+                        '        return best_loss, best_accuracy',
+                        '',
+                        '    def predict(self, X: npt.NDArray) -> npt.NDArray:',
+                        '        """Predict binary classes for X."""',
+                        '        if self.weights is None:',
+                        '            raise NotFittedError("Model must be fitted before prediction")',
+                        '        return self._sigmoid(np.dot(X, self.weights)) >= 0.5',
+                        '',
+                        '    @staticmethod',
+                        '    def _sigmoid(x: npt.NDArray) -> npt.NDArray:',
+                        '        return 1 / (1 + np.exp(-np.clip(x, -250, 250)))',
+                        '',
+                        '    @staticmethod',
+                        '    def _compute_loss(y: npt.NDArray, y_pred: npt.NDArray) -> float:',
+                        '        epsilon = 1e-15',
+                        '        y_pred = np.clip(y_pred, epsilon, 1 - epsilon)',
+                        '        return -np.mean(y * np.log(y_pred) + (1 - y) * np.log(1 - y_pred))',
                     ]
                 ]
                 code = random.choice(templates)
@@ -314,17 +412,35 @@ def update_daily_log():
 
 def save_and_backup():
     try:
-        # Single git add for all changes
-        subprocess.run(['git', 'add', 'daily_update.txt'], check=True)
+        # Check if there are changes to commit
+        status = subprocess.run(['git', 'status', '--porcelain'], capture_output=True, text=True, check=True)
+        if not status.stdout.strip():
+            print('No changes to commit')
+            return True
+
+        # Add all changes
+        subprocess.run(['git', 'add', '.'], check=True)
         
         message = generate_activity_message()
         try:
+            # Configure git to handle line endings
+            subprocess.run(['git', 'config', 'core.autocrlf', 'input'], check=True)
+            
             # Commit and push changes
             subprocess.run(['git', 'commit', '-m', message], check=True)
+            
+            # Pull before push to avoid conflicts
+            subprocess.run(['git', 'pull', '--rebase'], check=True)
             subprocess.run(['git', 'push'], check=True)
             print('Successfully committed and pushed changes')
         except subprocess.CalledProcessError as e:
             print(f'Error in git operations: {str(e)}')
+            # Try to recover from common git errors
+            try:
+                subprocess.run(['git', 'reset', '--mixed'], check=True)
+                print('Successfully reset git state after error')
+            except subprocess.CalledProcessError:
+                print('Failed to reset git state')
             return False
     except Exception as e:
         print(f'Unexpected error: {str(e)}')
